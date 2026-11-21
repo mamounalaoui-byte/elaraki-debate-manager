@@ -43,11 +43,28 @@ describe("complete application workflows", () => {
     await waitFor(() => expect(mocks.full).toHaveBeenCalledOnce()); expect(document.querySelector(".presenting")).not.toBeNull();
     fireEvent.keyDown(window, { key: "Escape" }); expect(document.querySelector(".presenting")).toBeNull();
   });
-  it("runs high-resolution poster export and downloads the PDF", async () => {
+  it("runs a 4K poster export by default and downloads the PDF", async () => {
     openDebate(); fireEvent.click(screen.getByRole("button", { name: "PDF" }));
     await waitFor(() => expect(mocks.save).toHaveBeenCalledOnce());
     expect(mocks.save).toHaveBeenCalledWith(expect.stringContaining("ELARAKI-en-2027-2028-"));
-    expect(mocks.png.mock.calls[0][1].pixelRatio).toBe(3); expect(mocks.addImage).toHaveBeenCalledWith("data:image/png;base64,poster", "PNG", 0, 0, 297, 167.0625, undefined, "FAST");
+    expect(mocks.save).toHaveBeenCalledWith(expect.stringContaining("-4K.pdf"));
+    expect(mocks.png.mock.calls[0][1]).toMatchObject({ canvasWidth: 3840, canvasHeight: 2160, pixelRatio: 1 }); expect(mocks.addImage).toHaveBeenCalledWith("data:image/png;base64,poster", "PNG", 0, 0, 297, 167.0625, undefined, "FAST");
+  });
+  it("exports at exactly 7680 by 4320 when 8K is selected", async () => {
+    openDebate(); fireEvent.change(screen.getByLabelText("PDF quality"), { target: { value: "8k" } });
+    fireEvent.click(screen.getByRole("button", { name: "PDF" }));
+    await waitFor(() => expect(mocks.save).toHaveBeenCalledOnce());
+    expect(mocks.png.mock.calls[0][1]).toMatchObject({ canvasWidth: 7680, canvasHeight: 4320, pixelRatio: 1 });
+    expect(mocks.save).toHaveBeenCalledWith(expect.stringContaining("-8K.pdf"));
+  });
+  it("shows the supplied school logo and requested developer credit", () => {
+    render(<Index />);
+    expect(screen.getByAltText("Logo ELARAKI").getAttribute("src")).toBe("/assets/school-logo.jpg");
+    expect(screen.getByText("developped by MAMOUN ALAOUI")).toBeTruthy();
+    expect(screen.queryByText("Private by design · Data stays on your device")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "FR" }));
+    expect(screen.getByText("developped by MAMOUN ALAOUI")).toBeTruthy();
+    expect(screen.queryByText("Privé par conception · Données sur cet appareil")).toBeNull();
   });
   it("PDF can exclude the timer overlays", async () => {
     openDebate(); fireEvent.click(screen.getByRole("switch")); fireEvent.click(screen.getByRole("button", { name: "PDF" }));

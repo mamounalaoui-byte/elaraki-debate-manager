@@ -12,7 +12,7 @@ export default defineConfig(() => ({
   plugins: [dyadComponentTagger(), react(), VitePWA({
     registerType: "prompt",
     injectRegister: "auto",
-    includeAssets: ["assets/*.png", "assets/*.jpg", "app-icon.svg"],
+    includeAssets: ["assets/*.png", "assets/*.jpg"],
     manifest: {
       name: "ELARAKI DEBATE MANAGER",
       short_name: "ELARAKI Debates",
@@ -21,7 +21,7 @@ export default defineConfig(() => ({
       background_color: "#faf9f7",
       display: "standalone",
       start_url: "/",
-      icons: [{ src: "/app-icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" }],
+      icons: [{ src: "/assets/school-logo.jpg", sizes: "447x447", type: "image/jpeg", purpose: "any" }],
     },
     workbox: { globPatterns: ["**/*.{js,css,html,svg,png,jpg,woff2}"], maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, navigateFallback: "/index.html" },
   })],
