@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import DebateTimer from "@/components/DebateTimer";
 import DebateForm from "@/components/DebateForm";
-import { Debate, elapsed, formatTime, freshClock, loadDebates, notifications, storeDebates, toggleClock, topicHeight } from "./debate";
+import { Debate, DEFAULT_SCHOOL_YEAR, isSchoolYear, elapsed, formatTime, freshClock, loadDebates, notifications, storeDebates, toggleClock, topicHeight } from "./debate";
 import { ringBell } from "./bell";
 import { jsPDF } from "jspdf";
 vi.mock("./bell", () => ({ ringBell: vi.fn().mockResolvedValue(undefined), unlockAudio: vi.fn().mockResolvedValue(undefined) }));
@@ -62,23 +62,38 @@ describe("debate creation and storage", () => {
     fireEvent.change(screen.getByLabelText("Debate topic"), { target: { value: topic } });
     fireEvent.change(document.getElementById("team-a")!, { target: { value: "1SM1" } });
     fireEvent.change(document.getElementById("team-b")!, { target: { value: "2SMB" } });
+    fireEvent.change(screen.getByLabelText("School year — starting year"), { target: { value: "2028" } });
     fireEvent.click(screen.getByText("Generate Debate"));
-    expect(onGenerate).toHaveBeenCalledWith({ topic, teamA: "1SM1", teamB: "2SMB" });
+    expect(onGenerate).toHaveBeenCalledWith({ topic, teamA: "1SM1", teamB: "2SMB", schoolYear: "2028-2029" });
   });
   it("clears the preparation form", () => {
     render(<DebateForm mode="en" ui="en" onBack={vi.fn()} onGenerate={vi.fn()} />);
     fireEvent.change(screen.getByLabelText("Debate topic"), { target: { value: "Some topic" } }); fireEvent.click(screen.getByText("Clear form"));
     expect((screen.getByLabelText("Debate topic") as HTMLTextAreaElement).value).toBe("");
   });
-  it("stores and reopens debates locally with exact multiline topics", () => {
-    const debate: Debate = { id: "1", mode: "fr", topic: "  Bonjour\nmonde !", teamA: "A", teamB: "B", createdAt: "2026-01-01" };
+  it("stores and reopens debates locally with exact multiline topics and selected year", () => {
+    const debate: Debate = { id: "1", mode: "fr", topic: "  Bonjour\nmonde !", teamA: "A", teamB: "B", schoolYear: "2027-2028", createdAt: "2026-01-01" };
     storeDebates([debate]); expect(loadDebates()).toEqual([debate]); storeDebates([]); expect(loadDebates()).toEqual([]);
+  });
+  it("preserves old debates and assigns their original reference year", () => {
+    const old = { id: "old", mode: "en", topic: "Existing debate", teamA: "A", teamB: "B", createdAt: "2026-01-01" };
+    localStorage.setItem("elaraki-debates-v1", JSON.stringify([old]));
+    expect(loadDebates()).toEqual([{ ...old, schoolYear: DEFAULT_SCHOOL_YEAR }]);
+  });
+  it("accepts consecutive school years and rejects malformed years", () => {
+    expect(isSchoolYear("2026-2027")).toBe(true); expect(isSchoolYear("2028-2029")).toBe(true); expect(isSchoolYear("2050-2051")).toBe(true);
+    expect(isSchoolYear("2028-2030")).toBe(false); expect(isSchoolYear("NaN-NaN")).toBe(false); expect(isSchoolYear(undefined)).toBe(false);
+  });
+  it("prepopulates the year when editing a saved debate", () => {
+    const initial: Debate = { id: "1", mode: "fr", topic: "Sujet", teamA: "A", teamB: "B", schoolYear: "2029-2030", createdAt: "2026-01-01" };
+    render(<DebateForm mode="fr" ui="fr" initial={initial} onBack={vi.fn()} onGenerate={vi.fn()} />);
+    expect((screen.getByLabelText("Année scolaire — année de début") as HTMLInputElement).value).toBe("2029"); expect(screen.getByText("2029-2030")).toBeTruthy();
   });
   it("safely handles invalid history", () => { localStorage.setItem("elaraki-debates-v1", "bad json"); expect(loadDebates()).toEqual([]); localStorage.setItem("elaraki-debates-v1", '[{"id":1}]'); expect(loadDebates()).toEqual([]); });
   it("expands and contracts the topic area including explicit newlines", () => { expect(topicHeight("Short topic")).toBe(12); expect(topicHeight("x".repeat(140))).toBeGreaterThan(12); expect(topicHeight("x".repeat(1000))).toBe(24); expect(topicHeight("a\nb\nc\nd\ne")).toBe(24); });
   it("creates a valid landscape PDF with the chosen paper ratio", () => {
     const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: [297, 167.0625] });
-    pdf.text("EL ARAKI DEBATE MANAGER", 10, 10);
+    pdf.text("ELARAKI DEBATE MANAGER", 10, 10);
     expect(pdf.output().startsWith("%PDF-")).toBe(true);
     expect(pdf.internal.pageSize.getWidth()).toBeCloseTo(297, 2);
     expect(pdf.internal.pageSize.getHeight()).toBeCloseTo(167.0625, 2);

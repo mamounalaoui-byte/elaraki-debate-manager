@@ -14,8 +14,8 @@ export default defineConfig(() => ({
     injectRegister: "auto",
     includeAssets: ["assets/*.png", "assets/*.jpg", "app-icon.svg"],
     manifest: {
-      name: "EL ARAKI DEBATE MANAGER",
-      short_name: "El Araki Debates",
+      name: "ELARAKI DEBATE MANAGER",
+      short_name: "ELARAKI Debates",
       description: "French and English school debates, timers and posters.",
       theme_color: "#2468aa",
       background_color: "#faf9f7",

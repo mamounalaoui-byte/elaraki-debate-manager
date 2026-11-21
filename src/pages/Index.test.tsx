@@ -24,6 +24,7 @@ const openDebate = () => {
   fireEvent.change(screen.getByLabelText("Debate topic"), { target: { value: "A new debate topic" } });
   fireEvent.change(screen.getByLabelText("Government"), { target: { value: "Group A" } });
   fireEvent.change(screen.getByLabelText("Opposition"), { target: { value: "Group B" } });
+  fireEvent.change(screen.getByLabelText("School year — starting year"), { target: { value: "2027" } });
   fireEvent.click(screen.getByText("Generate Debate"));
 };
 describe("complete application workflows", () => {
@@ -31,7 +32,7 @@ describe("complete application workflows", () => {
     openDebate(); expect(screen.getByText("A new debate topic")).toBeTruthy();
     fireEvent.click(screen.getByText("Home")); expect(screen.getByText("Recent debates")).toBeTruthy();
     fireEvent.click(screen.getByText("A new debate topic")); expect(screen.getByText("Test bell")).toBeTruthy();
-    const stored = JSON.parse(localStorage.getItem("elaraki-debates-v1")!); expect(stored[0].teamA).toBe("Group A");
+    const stored = JSON.parse(localStorage.getItem("elaraki-debates-v1")!); expect(stored[0].teamA).toBe("Group A"); expect(stored[0].schoolYear).toBe("2027-2028");
   });
   it("switches interface language and remembers the choice", () => {
     render(<Index />); fireEvent.click(screen.getByRole("button", { name: "FR" }));
@@ -45,6 +46,7 @@ describe("complete application workflows", () => {
   it("runs high-resolution poster export and downloads the PDF", async () => {
     openDebate(); fireEvent.click(screen.getByRole("button", { name: "PDF" }));
     await waitFor(() => expect(mocks.save).toHaveBeenCalledOnce());
+    expect(mocks.save).toHaveBeenCalledWith(expect.stringContaining("ELARAKI-en-2027-2028-"));
     expect(mocks.png.mock.calls[0][1].pixelRatio).toBe(3); expect(mocks.addImage).toHaveBeenCalledWith("data:image/png;base64,poster", "PNG", 0, 0, 297, 167.0625, undefined, "FAST");
   });
   it("PDF can exclude the timer overlays", async () => {
