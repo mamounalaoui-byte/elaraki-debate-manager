@@ -60,10 +60,10 @@ describe("complete application workflows", () => {
   it("shows the supplied school logo and requested developer credit", () => {
     render(<Index />);
     expect(screen.getByAltText("Logo ELARAKI").getAttribute("src")).toBe("/assets/school-logo.jpg");
-    expect(screen.getByText("developped by MAMOUN ALAOUI")).toBeTruthy();
+    expect(screen.getByText("Developed By MAMOUN ALAOUI")).toBeTruthy();
     expect(screen.queryByText("Private by design · Data stays on your device")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "FR" }));
-    expect(screen.getByText("developped by MAMOUN ALAOUI")).toBeTruthy();
+    expect(screen.getByText("Developed By MAMOUN ALAOUI")).toBeTruthy();
     expect(screen.queryByText("Privé par conception · Données sur cet appareil")).toBeNull();
   });
   it("PDF can exclude the timer overlays", async () => {
