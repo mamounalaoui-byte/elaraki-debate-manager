@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import DebateTimer from "@/components/DebateTimer";
 import DebateForm from "@/components/DebateForm";
-import { Debate, DEFAULT_SCHOOL_YEAR, isSchoolYear, elapsed, formatTime, freshClock, loadDebates, notifications, storeDebates, toggleClock, topicHeight } from "./debate";
+import { Debate, DEFAULT_SCHOOL_YEAR, isSchoolYear, elapsed, formatTime, freshClock, loadDebates, notifications, storeDebates, toggleClock } from "./debate";
 import { ringBell } from "./bell";
 import { jsPDF } from "jspdf";
 vi.mock("./bell", () => ({ ringBell: vi.fn().mockResolvedValue(undefined), unlockAudio: vi.fn().mockResolvedValue(undefined) }));
@@ -90,7 +90,6 @@ describe("debate creation and storage", () => {
     expect((screen.getByLabelText("Année scolaire — année de début") as HTMLInputElement).value).toBe("2029"); expect(screen.getByText("2029-2030")).toBeTruthy();
   });
   it("safely handles invalid history", () => { localStorage.setItem("elaraki-debates-v1", "bad json"); expect(loadDebates()).toEqual([]); localStorage.setItem("elaraki-debates-v1", '[{"id":1}]'); expect(loadDebates()).toEqual([]); });
-  it("expands and contracts the topic area including explicit newlines", () => { expect(topicHeight("Short topic")).toBe(12); expect(topicHeight("x".repeat(140))).toBeGreaterThan(12); expect(topicHeight("x".repeat(1000))).toBe(24); expect(topicHeight("a\nb\nc\nd\ne")).toBe(24); });
   it("creates a valid landscape PDF with the chosen paper ratio", () => {
     const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: [297, 167.0625] });
     pdf.text("ELARAKI DEBATE MANAGER", 10, 10);

@@ -15,7 +15,6 @@ export function formatTime(milliseconds: number) {
   const seconds = Math.floor(milliseconds / 1000);
   return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 }
-export const topicHeight = (topic: string) => Math.min(24, Math.max(12, 10 + Math.max(topic.length / 11, (topic.split("\n").length - 1) * 4)));
 const key = "elaraki-debates-v1";
 export function loadDebates(): Debate[] {
   try {
